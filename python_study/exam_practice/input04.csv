@@ -1,0 +1,9 @@
+Equipment,Item,Value,Unit,Result
+EQ01, Voltage,24.567, V, PASS
+EQ01,"Vol,DC",1.005,A,PASS
+EQ02,Current,0.876,A,FAIL
+EQ02, Resistance,2.675,kOhm, PASS
+EQ03,Voltage,24.999,V,PASS
+EQ03,Current,0.005,A,FAIL
+EQ04,Temperature,45.5,C,PASS
+EQ05,Voltage,1.005,V,PASS

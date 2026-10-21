@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 생성된 결과물 (문제 실행 시 만들어짐)
+output*.txt
+output*.csv
+
+# 편집기
+.vscode/
+.DS_Store

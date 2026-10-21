@@ -1,0 +1,8 @@
+# 회로 계산 (직렬 / 병렬 / 전압 분배)
+# SOURCE 는 회로에 인가되는 전압입니다. 먼저 한 번 선언합니다.
+SOURCE 5.0
+SERIES 100 220
+PARALLEL 1000 1000 500
+DIVIDER 1000 2000
+SERIES 0 100
+DIVIDER 1000

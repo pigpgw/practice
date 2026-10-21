@@ -1,0 +1,5 @@
+# 읽어야 할 로그 파일 목록 (input16_logs 폴더 기준입니다)
+aoi_01.log
+aoi_02.log
+aoi_03.log
+missing_99.log

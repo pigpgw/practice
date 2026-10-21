@@ -1,0 +1,5 @@
+Test,Low,High,Unit
+VDD,1.10,1.30,V
+IDD,0.0,0.020,A
+FREQ,90.0,110.0,MHz
+TEMP,,,C
