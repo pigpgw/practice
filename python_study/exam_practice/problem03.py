@@ -120,19 +120,14 @@ def solve() -> int:
         if count:
             values = list(map(float, values))
             values.sort()
-            print(values)
             lowest = values[0]
             highest = values[-1]
-            average = sum(float(v) for v in values) // count
-            lines.append(f"MIN={lowest}")
-            lines.append(f"MAX={highest}")
+            average = sum(values) / count
+            lines.append(f"MIN={lowest:.2f}")
+            lines.append(f"MAX={highest:.2f}")
             lines.append(f"AVG={average:.2f}")
             lines.append("SORTED=" + ",".join(list(map(str, values))))
-        else:
-            lines.append("MIN=")
-            lines.append("MAX=")
-            lines.append("AVG=")
-            lines.append("SORTED=")
+        print(lines)
 
         OUTPUT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
     except (OSError, ValueError) as error:
