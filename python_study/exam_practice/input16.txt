@@ -1,8 +1,0 @@
-# Time;Site;Code;Severity;Message
-Time=10:05;Site=2;Code=E101;Severity=HIGH;Message=contact open;pin=3
-Time=10:06;Site=2;Code=E102;Severity=HIGH;Message=voltage unstable
-Time=10:07;Site=2;Code=S201;Severity=MEDIUM;Message=program timeout
-Time=10:10;Site=1;Code=X999;Severity=LOW;Message=unknown=alarm
-Time=10:20;Site=2;Code=E103;Severity=URGENT;Message=bad severity
-Time=10:25;Code=E104;Severity=HIGH;Message=missing site
-Time=10:30;Site=2;Site=3;Code=E105;Severity=LOW;Message=dup key

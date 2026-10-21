@@ -60,7 +60,7 @@ DUMP
 
 ## 예시
 
-입력 (`input05.txt`):
+입력 예시:
 
 ```text
 CAP 3
@@ -84,6 +84,10 @@ STATS count=3 min=20.00 max=40.00 avg=30.00 overwrites=1
 DUMP 20.00 30.00 40.00
 ERRORS=0
 ```
+
+> 실제 입력 파일 `input05.txt` 는 이 예시보다 길다.
+> 용량 5 로 가득 채운 뒤 덮어쓰기, `CLEAR` 후 빈 버퍼 `STATS`/`DUMP`,
+> 용량을 다시 지정했을 때 초기화까지 들어 있다.
 
 ## 실행
 

@@ -1,11 +1,29 @@
-# 측정값 목록
-VALUE 12.5
-VALUE 9.75
-VALUE 10.25
-VALUE 8.0
-VALUE 10.25
-VALUE 3.5
-VALUE 100.75
-VALUE 2.0
-VALUE 7.25
-VALUE 10.25
+# 고정 크기 링 버퍼
+# CAP 으로 용량을 정하고, ADD 로 값을 넣는다.
+# STATS / DUMP 으로 상태를 보고, CLEAR 로 비운다.
+# # 주석과 빈 줄은 무시한다.
+
+CAP 5
+ADD 10.0
+ADD 20.5
+ADD 30
+STATS
+DUMP
+
+ADD 40.25
+ADD 50.75
+ADD 60.5
+STATS
+DUMP
+
+CLEAR
+DUMP
+STATS
+
+# 용량을 다시 정하면 내용과 덮어쓰기 횟수가 초기화된다.
+CAP 3
+ADD 1
+ADD 2
+ADD 3
+ADD 4
+DUMP

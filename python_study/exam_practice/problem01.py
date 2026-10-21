@@ -117,14 +117,48 @@ INPUT_PATH = HERE / "input01.txt"
 OUTPUT_PATH = HERE / "output01.txt"
 
 
+def timestamp_to_minute(time: str) -> int:
+    arr = time.split(":")
+    if len(arr) == 3:
+        h, m, s = map(int, time.split(":"))
+    else:
+        h, m = map(int, time.split(":"))
+        s = 0
+    return h * 3600 + m * 60 + s
+
+
 def solve() -> int:
     """문제 1. 장비 로그 시간 정렬 및 필터 (난이도 중상)"""
     with open(INPUT_PATH, "r", encoding="utf-8") as in_file:
         lines = in_file.readlines()
+        start_time = 0
+        end_time = 24 * 3600 - 1
+        results = []
+        error_count = 0
+        failed_count = 0
+
         for line in lines:
-            line = line.strip()
             if line.startswith("#"):
                 continue
+            if line.startswith("RANGE"):
+                arr = line.split()
+                start_time = timestamp_to_minute(arr[1])
+                end_time = timestamp_to_minute(arr[2]) + 59
+            if line.startswith("LOG"):
+                header, weather, time, site, tool, unit, result = line.split()
+                site = int(site.split("=")[1])
+                result = result.split("=")[1]
+                time_to_minute = timestamp_to_minute(time)
+                if time_to_minute < start_time or time_to_minute > end_time:
+                    continue
+                if not (1 <= site <= 8) or (result not in ("FAIL", "PASS")):
+                    error_count += 1
+                    continue
+                if result == "FAIL":
+                    failed_count += 1
+                result.append([time, line.removeprefix("LOG ").rstrip("\n")])
+        result.sort(key=lambda x: x[0])
+
     return 0
 
 

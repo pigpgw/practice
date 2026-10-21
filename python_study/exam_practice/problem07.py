@@ -1,97 +1,129 @@
-"""문제 7. 디버깅: 스펙 판정과 중앙값 계산 오류 (난이도 중상)
+"""문제 7. 웨이퍼 테스트 결과 집계와 수율 (난이도 중상)
 
 
 ## 핵심
 
-**스펙 경계 판정과 중앙값 계산**입니다. 경계 포함 여부와 괄호 하나.
+**웨이퍼별로 묶어서 수율과 Bin 분포를 내는 것**입니다. 첫 등장 순서 유지, INVALID 처리.
 
-새로 짜는 문제가 아니라 **고치는 문제**다. 측정값을 스펙과 비교해서 PASS/FAIL을 내는
-프로그램을 만들었는데, 스펙 경계에 딱 걸린 케이스가 자꾸 반대로 나온다.
+웨이퍼 테스트를 하고 나면 "이 웨이퍼 수율이 얼마냐", "어느 Bin에서 많이 떨어졌냐"를
+보면서 공정 상태를 본다. FAE의 기본 업무라 수학이라기보다 집계에 가깝다.
+Bin이라는 개념(합격/불량 분류 번호)을 실제로 다뤄보는 문제다.
 
-확인할 것.
-
-1. 스펙과 정확히 같은 값(하한, 상한)이 PASS로 나오나?
-2. 스펙 중앙값에서 얼마나 벗어났는지가 맞아? `Low`가 크고 `High`가 작게 들어간
-   스펙도 있다.
-
-지금 이 코드를 그대로 돌리면 이렇게 나온다.
+`input07.csv`의 각 행은 다이(die) 하나의 테스트 결과다.
 
 ```text
-U001 VDD PASS delta=0.55
-U002 VDD FAIL delta=0.45
-U003 VDD FAIL delta=0.65
-U004 VDD PASS delta=0.50
-U005 IDD PASS delta=0.01
-U006 IDD FAIL delta=0.01
+Wafer,Lot,Die,Status,Bin
 ```
 
-요구 사항은 아래와 같다.
+1. `Wafer`별로 묶어 집계한다. 웨이퍼 출력 순서는 **첫 등장 순서**를 유지한다.
+2. 한 웨이퍼 안에서 개수를 이렇게 센다.
+   - `Dies` — 그 웨이퍼의 전체 다이 수
+   - `Pass` — `Status` 가 PASS 인 다이 수
+   - `Fail` — `Status` 가 FAIL 인 다이 수
+   - `Status` 가 PASS/FAIL 이 외의 값(INVALID)인 다이는 **`Dies` 에만** 들어가고,
+     `Pass` 나 `Fail` 어느 쪽에도 세지 않는다.
+3. 수율 `YieldPercent` 는 `Pass / Dies × 100` 이고 소수 둘째 자리까지 **사사오입**한다.
+   INVALID 다이가 `Dies` 에 들어가므로 **수율 분모에도 들어간다.**
+4. Bin 분포는 **Bin 번호 오름차순**으로 센다. Bin 번호는 정수다.
+   INVALID 다이도 자기 Bin 번호로 집계된다.
+5. `Wafer`, `Lot`, `Die` 가 비었거나 `Bin` 이 정수가 아니면 오류로 세고 제외한다.
+   `Status` 가 비어 있으면 오류고, PASS/FAIL 외의 값이면 2번 규칙으로 처리한다.
+6. 오류는 stderr에 `ERROR line N: 이유` 형식으로 출력하고, 마지막 줄에 `ERRORS=n`을
+   **리포트 파일에** 쓴다.
 
-1. `input07.csv`의 첫 줄은 헤더이고, 그다음 각 행에서 유닛, 항목, 측정값, 하한, 상한을
-   읽는다. (`Unit`은 유닛 이름, `Test`는 항목 이름)
-2. `Low <= Measured <= High` 면 PASS, 아니면 FAIL이다. **경계값을 포함한다.**
-3. `Delta` 는 스펙 중앙값과 측정값의 차이이고, 중앙값은 `(Low + High) / 2` 다.
-   `Delta = abs(Measured - 중앙값)`
-4. 출력은 아래 형식으로 쓴다. 소수는 둘째 자리까지 **사사오입**한다.
+## 풀이 순서 (⏱ 35분)
 
-   ```text
-   U001 VDD PASS delta=0.05
-   ```
+1. Wafer별 그룹핑 — 8분
+2. Total/Pass/Fail 집계 — 8분
+3. 수율 계산 (사사오입) — 7분
+4. Bin 분포 — 7분
+5. 출력 3개 파일 — 5분
 
-## 풀이 순서 (⏱ 15분)
+> 1~3번만 해도 실전 5번(CSV 집계) 유형이 됩니다.
 
-1. 스펙 경계값(=Low, =High) 케이스 찾기 — 3분
-2. `>` `<` → `>=` `<=` 로 수정 — 5분
-3. 중앙값 계산 괄호 — 5분
-4. diff — 2분
+## 출력
 
-> 버그 2개만 찾으면 끝입니다.
+- `output07.csv` — 웨이퍼별 집계. 헤더는
+  `Wafer,Lot,Dies,Pass,Fail,YieldPercent`다.
+- `output07_bins.txt` — Bin 분포. 헤더는 `Bin,Count`다.
+- `output07_report.txt` — 아래 형태다.
+
+```text
+Wafers=3
+Lots=2
+Dies=12
+Pass=6
+Fail=5
+Yield=50.00%
+ERRORS=2
+```
 
 ## 예시
 
 입력 (`input07.csv`):
 
 ```text
-Unit,Test,Measured,Low,High
-U001,VDD,1.20,1.10,1.30
-U002,VDD,1.30,1.10,1.30
-U003,VDD,1.10,1.10,1.30
-U004,VDD,1.25,1.10,1.30
-U005,IDD,0.017,0.0,0.020
-U006,IDD,0.020,0.0,0.020
-U007,IDD,0.000,0.0,0.020
-U008,IDD,0.025,0.0,0.020
-U009,TEMP,25,20,30
-U010,TEMP,30,20,30
-U011,TEMP,35,20,30
+Wafer,Lot,Die,Status,Bin
+W01,L24A,D01,PASS,1
+W01,L24A,D02,FAIL,5
+W01,L24A,D03,FAIL,5
+W01,L24A,D04,PASS,1
+W01,L24A,D05,PASS,1
+W02,L24A,D01,PASS,1
+W02,L24A,D02,FAIL,9
+W02,L24A,D03,FAIL,9
+W03,L25B,D01,PASS,1
+W03,L25B,D02,PASS,3
+W03,L25B,D03,FAIL,5
+W03,L25B,D04,INVALID,7
+W03,L25B,D05,,1
+W03,L25B,D06,PASS,abc
 ```
 
-출력 (`output07.txt`):
+출력 (`output07.csv`):
 
 ```text
-U001 VDD PASS delta=0.00
-U002 VDD PASS delta=0.10
-U003 VDD PASS delta=0.10
-U004 VDD PASS delta=0.05
-U005 IDD PASS delta=0.01
-U006 IDD PASS delta=0.01
-U007 IDD PASS delta=0.01
-U008 IDD FAIL delta=0.02
-U009 TEMP PASS delta=0.00
-U010 TEMP PASS delta=5.00
-U011 TEMP FAIL delta=10.00
+Wafer,Lot,Dies,Pass,Fail,YieldPercent
+W01,L24A,5,3,2,60.00
+W02,L24A,3,1,2,33.33
+W03,L25B,4,2,1,50.00
 ```
 
-> VDD 중앙값은 1.20, IDD 중앙값은 0.010, TEMP 중앙값은 25 다.
-> `U002`·`U003`은 스펙 경계값이라 PASS 여야 하고, `U006`·`U007`·`U010`도 마찬가지다.
-> `U008`·`U011`은 스펙 밖이라 FAIL 이다.
+출력 (`output07_bins.txt`):
+
+```text
+Bin,Count
+1,5
+3,1
+5,3
+7,1
+9,2
+```
+
+출력 (`output07_report.txt`):
+
+```text
+Wafers=3
+Lots=2
+Dies=12
+Pass=6
+Fail=5
+Yield=50.00%
+ERRORS=2
+```
+
+`D04`는 Status가 INVALID라 전체 수에는 들어가지만 PASS/FAIL 분자에는 안 들어가서,
+`W03`은 Dies가 4인데 Pass는 2, Fail은 1이다.
+`D05`(Die 빈 칸), `D06`(Bin이 숫자 아님)은 오류라 통째로 제외된다.
 
 ## 실행
 
     python3 problem07.py
 
 입력: input07.csv
-출력: output07.txt
+출력: output07.csv
+출력: output07_bins.txt
+출력: output07_report.txt
 """
 
 import sys
@@ -100,43 +132,13 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 
 INPUT_PATH = HERE / "input07.csv"
-OUTPUT_PATH = HERE / "output07.txt"
+SUMMARY_PATH = HERE / "output07.csv"
+BINS_PATH = HERE / "output07_bins.txt"
+REPORT_PATH = HERE / "output07_report.txt"
 
 
 def solve() -> int:
-    """문제 7. 디버깅: 스펙 판정과 중앙값 계산 오류 (난이도 중상)"""
-    try:
-        lines = []
-
-        with open(INPUT_PATH, "r", encoding="utf-8") as in_file:
-            in_file.readline()
-
-            for raw in in_file:
-                text = raw.strip()
-                if not text or text.startswith("#"):
-                    continue
-                fields = text.split(",")
-                if len(fields) != 5:
-                    raise ValueError(f"필드 수가 {len(fields)}개입니다 (5개 필요): {text}")
-                unit, item, measured, low, high = fields
-                measured_value = float(measured)
-                low_value = float(low)
-                high_value = float(high)
-
-                center = low_value + high_value / 2
-                delta = abs(measured_value - center)
-
-                if measured_value > low_value and measured_value < high_value:
-                    status = "PASS"
-                else:
-                    status = "FAIL"
-
-                lines.append(f"{unit} {item} {status} delta={delta:.2f}")
-
-        OUTPUT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    except (OSError, ValueError) as error:
-        print(f"파일 처리 오류: {error}", file=sys.stderr)
-        return 1
+    """문제 7. 웨이퍼 테스트 결과 집계와 수율 (난이도 중상)"""
     return 0
 
 
